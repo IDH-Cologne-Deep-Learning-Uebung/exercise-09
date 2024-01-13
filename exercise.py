@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 # read in CSV file
-data = pd.read_csv("data/gmb.csv",encoding = 'latin1')
+data = pd.read_csv("exercise-09/data/gmb.csv",encoding = 'latin1')
 
 # the first column of the file contains the sentence number
 # -- but only for the first token of each sentence.
@@ -45,10 +45,14 @@ from keras.utils import to_categorical
 # find the maximum length for the sentences
 max_len = max([len(s) for s in sentences])
 
+
+
+#error fix: added dtype
+
 # extract the word index
-x = np.array([ np.array([ w[0] for w in s ]) for s in sentences ])
+x = np.array([ np.array([ w[0] for w in s ]) for s in sentences ]     , dtype="object")
 # extract the tag index
-y = np.array([ np.array([ w[2] for w in s ]) for s in sentences ])
+y = np.array([ np.array([ w[2] for w in s ]) for s in sentences ]     , dtype="object")
 
 # shorter sentences are now padded to same length, using (index of) padding symbol
 x = pad_sequences(maxlen = max_len, sequences = x,
@@ -66,7 +70,10 @@ from sklearn.model_selection import train_test_split
 
 x_train,x_test,y_train,y_test = train_test_split(x,y,test_size = 0.1,random_state=1)
 
-from tensorflow.keras import models, layers, optimizers
+
+import keras
+import tensorflow as tf
+from keras import models, layers, optimizers
 
 model = models.Sequential()
 model.add(layers.Input(shape = (max_len,)))
@@ -79,11 +86,35 @@ model.summary()
 model.compile(optimizer='Adam',
   loss = 'categorical_crossentropy', metrics = ['accuracy'])
 
+
+#1d=same shape, 2d= with shape (samples, sequence_length)
+#print("y Shape", y_train.shape)  #=(43163, 104, 17)
+#sample_weight1 = np.zeros(43163)   #1d
+#print(unique_tags)
+#1d=; 2d=; 3d=  -> pos
+
+print(y_train[0,])  #
+#print(y_train[0,10])
+#print(y_train[0,10,10])
+print((len(y_train),))
+#print(x_test[0,100,]) #
+
+
+#give specific tags more weight...
+#sample_weight1 = np.ones(shape=(len(y_train),))
+sample_weight1 = np.full(shape=(len(y_train),), fill_value=0)
+sample_weight1[(len(y_train),) == 0] = 0.00000000000001
+#sample_weight1[(len(y_train),) == "I-tim"] = 1000.0
+#sample_weight1[(len(y_train),) == 1] = 1.5
+sample_weight1[(len(y_train),) == 1] = 100.0
+#class weight?
+
 history = model.fit(
     x_train, np.array(y_train),
     batch_size = 64,
     epochs = 1,
-    verbose = 1
+    verbose = 1,
+    sample_weight = sample_weight1
 )
 
 model.evaluate(x_test, np.array(y_test))
