@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 
+
 # read in CSV file
 data = pd.read_csv("data/gmb.csv",encoding = 'latin1')
 
@@ -67,6 +68,15 @@ from sklearn.model_selection import train_test_split
 x_train,x_test,y_train,y_test = train_test_split(x,y,test_size = 0.1,random_state=1)
 
 from tensorflow.keras import models, layers, optimizers
+from sklearn.utils.class_weight import compute_class_weight
+
+
+#not working!
+#error: TypeError: compute_class_weight() takes 1 positional argument but 3 were given
+#I tried with pythong 3.8 and 3.9 but not working.
+class_labels = np.unique(y_train)
+class_weights = compute_class_weight('balanced', class_labels, y_train)
+
 
 model = models.Sequential()
 model.add(layers.Input(shape = (max_len,)))
@@ -79,12 +89,7 @@ model.summary()
 model.compile(optimizer='Adam',
   loss = 'categorical_crossentropy', metrics = ['accuracy'])
 
-history = model.fit(
-    x_train, np.array(y_train),
-    batch_size = 64,
-    epochs = 1,
-    verbose = 1
-)
+history = model.fit( x_train, np.array(y_train),batch_size = 64,epochs = 1, verbose = 1)
 
 model.evaluate(x_test, np.array(y_test))
 
