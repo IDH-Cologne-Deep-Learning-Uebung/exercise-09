@@ -46,6 +46,13 @@ from keras.utils import to_categorical
 max_len = max([len(s) for s in sentences])
 
 # extract the word index
+""""
+Traceback (most recent call last):
+File "c:\Users\hanna\exercise-09\exercise.py", line 49, in <module>
+x = np.array([ np.array([ w[0] for w in s ]) for s in sentences ])
+ValueError: setting an array element with a sequence. The requested array has an inhomogeneous shape after 1 dimensions. 
+The detected shape was (47959,) + inhomogeneous part.
+"""
 x = np.array([ np.array([ w[0] for w in s ]) for s in sentences ])
 # extract the tag index
 y = np.array([ np.array([ w[2] for w in s ]) for s in sentences ])
