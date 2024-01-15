@@ -90,7 +90,8 @@ history = model.fit(
     x_train, np.array(y_train),
     batch_size = 64,
     epochs = 1,
-    verbose = 1
+    verbose = 1,
+    sample_weight = 'balanced'
 )
 
 model.evaluate(x_test, np.array(y_test))
