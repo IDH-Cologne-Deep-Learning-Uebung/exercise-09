@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 
+
 # read in CSV file
 data = pd.read_csv("data/gmb.csv",encoding = 'latin1')
 
@@ -46,9 +47,9 @@ from keras.utils import to_categorical
 max_len = max([len(s) for s in sentences])
 
 # extract the word index
-x = np.array([ np.array([ w[0] for w in s ]) for s in sentences ])
+x = np.array([ np.array([ w[0] for w in s ]) for s in sentences ], dtype="object")
 # extract the tag index
-y = np.array([ np.array([ w[2] for w in s ]) for s in sentences ])
+y = np.array([ np.array([ w[2] for w in s ]) for s in sentences ], dtype="object")
 
 # shorter sentences are now padded to same length, using (index of) padding symbol
 x = pad_sequences(maxlen = max_len, sequences = x,
@@ -79,11 +80,17 @@ model.summary()
 model.compile(optimizer='Adam',
   loss = 'categorical_crossentropy', metrics = ['accuracy'])
 
+
+from sklearn.utils.class_weight import compute_sample_weight
+sample_weight = compute_sample_weight('balanced', y_train.argmax(axis=2))
+
+#print(sample_weight.shape)
 history = model.fit(
     x_train, np.array(y_train),
     batch_size = 64,
     epochs = 1,
-    verbose = 1
+    verbose = 1,
+    sample_weight = sample_weight
 )
 
 model.evaluate(x_test, np.array(y_test))
