@@ -46,9 +46,9 @@ from keras.utils import to_categorical
 max_len = max([len(s) for s in sentences])
 
 # extract the word index
-x = np.array([ np.array([ w[0] for w in s ]) for s in sentences ])
+x = np.array([ np.array([ w[0] for w in s ]) for s in sentences ], dtype="object")
 # extract the tag index
-y = np.array([ np.array([ w[2] for w in s ]) for s in sentences ])
+y = np.array([ np.array([ w[2] for w in s ]) for s in sentences ], dtype = "object")
 
 # shorter sentences are now padded to same length, using (index of) padding symbol
 x = pad_sequences(maxlen = max_len, sequences = x,
@@ -79,8 +79,25 @@ model.summary()
 model.compile(optimizer='Adam',
   loss = 'categorical_crossentropy', metrics = ['accuracy'])
 
+from sklearn.utils.class_weight import compute_class_weight
+
+class_weights = compute_class_weight( class_weight='balanced',  classes= np.unique(np.argmax(y_train, axis=2)),  y = np.ravel(y_train.values, order='C'))
+
+
+
+sample_weights = np.zeros((y_train.shape[0], y_train.shape[1], num_words_tag ))
+
+for i in range(y_train.shape[0]):
+  for j in range(y_train.shape[1]):
+    sample_weights[i,j,:] = class_weights[np.argmax(y_train[i,j,:])]
+
+
+
 history = model.fit(
     x_train, np.array(y_train),
+
+    
+    sample_weight = sample_weights,
     batch_size = 64,
     epochs = 1,
     verbose = 1
@@ -90,9 +107,9 @@ model.evaluate(x_test, np.array(y_test))
 
 from sklearn.metrics import classification_report
 
+
+
 Y_test = np.argmax(y_test, axis=2)
 
 y_pred = np.argmax(model.predict(x_test), axis=2)
-
-
 print(classification_report(Y_test.flatten(), y_pred.flatten(), zero_division=0, target_names=unique_tags))
