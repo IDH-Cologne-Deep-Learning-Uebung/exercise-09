@@ -79,19 +79,12 @@ model.summary()
 model.compile(optimizer='Adam',
   loss = 'categorical_crossentropy', metrics = ['accuracy'])
 
-from sklearn.utils.class_weight import compute_class_weight
-
-class_weights = compute_class_weight( class_weight='balanced',  classes= np.unique(np.argmax(y_train, axis=2)),  y = np.ravel(y_train.values, order='C'))
+from sklearn.utils.class_weight import compute_sample_weight
 
 
 
-sample_weights = np.zeros((y_train.shape[0], y_train.shape[1], num_words_tag ))
 
-for i in range(y_train.shape[0]):
-  for j in range(y_train.shape[1]):
-    sample_weights[i,j,:] = class_weights[np.argmax(y_train[i,j,:])]
-
-
+sample_weights = compute_sample_weight('balanced', np.argmax(y_train, axis = 2 ))
 
 history = model.fit(
     x_train, np.array(y_train),
